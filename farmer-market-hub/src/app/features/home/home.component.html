@@ -1,0 +1,54 @@
+<div class="home-container">
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Welcome to Farmer Market Hub</h1>
+      <p>Discover fresh, local produce directly from farmers in your area</p>
+      <a routerLink="/products" class="cta-button">Browse Products</a>
+    </div>
+  </section>
+
+  <section class="featured-products">
+    <h2>Featured Products</h2>
+    <div class="product-grid">
+      <div *ngFor="let product of featuredProducts" class="product-card">
+        <img [src]="product.imageUrl" [alt]="product.name">
+        <div class="product-info">
+          <h3>{{product.name}}</h3>
+          <p class="price">{{product.price | currency}}</p>
+          <p class="farmer">By {{product.farmer?.firstName}} {{product.farmer?.lastName}}</p>
+          <button (click)="addToCart(product)" [disabled]="product.stock === 0">
+            {{product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}}
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="categories">
+    <h2>Shop by Category</h2>
+    <div class="category-grid">
+      <div *ngFor="let category of categories" class="category-card" [routerLink]="['/products']" [queryParams]="{category: category.name}">
+        <img [src]="category.imageUrl" [alt]="category.name">
+        <h3>{{category.name}}</h3>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="feature">
+      <i class="fas fa-truck"></i>
+      <h3>Fast Delivery</h3>
+      <p>Get your fresh produce delivered to your doorstep</p>
+    </div>
+    <div class="feature">
+      <i class="fas fa-leaf"></i>
+      <h3>Fresh & Local</h3>
+      <p>Support local farmers and get the freshest produce</p>
+    </div>
+    <div class="feature">
+      <i class="fas fa-shield-alt"></i>
+      <h3>Secure Payment</h3>
+      <p>Safe and secure payment options</p>
+    </div>
+  </section>
+</div> 

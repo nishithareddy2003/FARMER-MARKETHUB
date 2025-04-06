@@ -1,0 +1,136 @@
+<div class="user-management-container">
+  <div class="header">
+    <h1>User Management</h1>
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="filterUsers()"
+        placeholder="Search users..."
+        class="search-input"
+      >
+    </div>
+  </div>
+
+  <div class="users-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers">
+          <td>{{user.firstName}} {{user.lastName}}</td>
+          <td>{{user.email}}</td>
+          <td>
+            <span class="role-badge" [ngClass]="user.role">
+              {{user.role | titlecase}}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="user.status">
+              {{user.status | titlecase}}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button
+                (click)="editUser(user)"
+                class="edit-button"
+                title="Edit User"
+              >
+                <i class="fas fa-edit"></i>
+              </button>
+              <button
+                (click)="toggleUserRole(user)"
+                class="toggle-button"
+              >
+                {{user.role === 'admin' ? 'Make Customer' : 'Make Admin'}}
+              </button>
+              <button
+                (click)="deleteUser(user)"
+                class="delete-button"
+                title="Delete User"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="filteredUsers.length === 0" class="no-data">
+    No users found
+  </div>
+
+  <!-- Edit User Modal -->
+  <div *ngIf="showEditModal" class="modal">
+    <div class="modal-content">
+      <h2>Edit User</h2>
+      <form (ngSubmit)="saveUserChanges()">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input
+            type="text"
+            id="firstName"
+            [(ngModel)]="editingUser!.firstName"
+            name="firstName"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            [(ngModel)]="editingUser!.lastName"
+            name="lastName"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            [(ngModel)]="editingUser!.email"
+            name="email"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="role">Role</label>
+          <select
+            id="role"
+            [(ngModel)]="editingUser!.role"
+            name="role"
+            required
+          >
+            <option value="user">User</option>
+            <option value="farmer">Farmer</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="closeEditModal()" class="cancel-button">
+            Cancel
+          </button>
+          <button type="submit" class="save-button">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div> 

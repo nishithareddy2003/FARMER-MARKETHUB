@@ -1,0 +1,40 @@
+<div class="cart-container">
+  <div class="cart-header">
+    <h1>Shopping Cart</h1>
+    <div class="cart-summary">
+      <span class="item-count">{{cartItems.length}} items</span>
+      <span class="total">Total: {{totalAmount | currency}}</span>
+    </div>
+  </div>
+
+  <div class="cart-content">
+    <div *ngIf="cartItems.length === 0" class="empty-cart">
+      <p>Your cart is empty</p>
+      <a routerLink="/products" class="continue-shopping">Continue Shopping</a>
+    </div>
+
+    <div *ngIf="cartItems.length > 0" class="cart-items">
+      <div *ngFor="let item of cartItems" class="cart-item">
+        <div class="item-image">
+          <img [src]="item.product.imageUrl" [alt]="item.product.name">
+        </div>
+        <div class="item-details">
+          <h3>{{item.product.name}}</h3>
+          <div class="item-price">{{item.product.price | currency}}</div>
+          <div class="quantity-controls">
+            <button (click)="updateQuantity(item, -1)" [disabled]="item.quantity <= 1">-</button>
+            <span>{{item.quantity}}</span>
+            <button (click)="updateQuantity(item, 1)" [disabled]="item.quantity >= item.product.stock">+</button>
+          </div>
+          <p class="subtotal">Subtotal: {{item.product.price * item.quantity | currency}}</p>
+        </div>
+        <button class="remove-item" (click)="removeFromCart(item)">Remove</button>
+      </div>
+    </div>
+
+    <div *ngIf="cartItems.length > 0" class="cart-actions">
+      <a routerLink="/products" class="continue-shopping">Continue Shopping</a>
+      <button class="checkout-button" routerLink="checkout">Proceed to Checkout</button>
+    </div>
+  </div>
+</div> 

@@ -1,0 +1,37 @@
+<div class="product-detail-container">
+  <div class="product-content">
+    <div class="product-images">
+      <div class="main-image">
+        <img [src]="selectedImage" [alt]="product.name">
+      </div>
+      <div class="thumbnail-gallery">
+        <img *ngFor="let image of product.images" 
+             [src]="image" 
+             [alt]="product.name"
+             (click)="selectImage(image)">
+      </div>
+    </div>
+    <div class="product-info">
+      <h1>{{product.name}}</h1>
+      <div class="price">{{product.price | currency}}</div>
+      <div class="stock-info" [class.low-stock]="product.stock < 10">
+        {{product.stock}} in stock
+      </div>
+      <p class="description">{{product.description}}</p>
+      <p class="category">Category: {{product.category}}</p>
+      <div class="quantity-selector">
+        <label>Quantity:</label>
+        <div class="quantity-controls">
+          <button (click)="updateQuantity(quantity - 1)" [disabled]="quantity <= 1">-</button>
+          <input type="number" [(ngModel)]="quantity" (change)="updateQuantity(quantity)">
+          <button (click)="updateQuantity(quantity + 1)" [disabled]="quantity >= product.stock">+</button>
+        </div>
+      </div>
+      <button class="add-to-cart-btn" 
+              (click)="addToCart()" 
+              [disabled]="product.stock === 0">
+        Add to Cart
+      </button>
+    </div>
+  </div>
+</div> 
