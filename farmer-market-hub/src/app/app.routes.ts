@@ -22,8 +22,7 @@ export const routes: Routes = [
   },
   {
     path: 'cart',
-    loadComponent: () => import('./features/cart/cart.component').then(m => m.CartComponent),
-    canActivate: [AuthGuard]
+    loadChildren: () => import('./features/cart/cart.routes').then(m => m.CART_ROUTES)
   },
   {
     path: 'profile',
@@ -39,6 +38,19 @@ export const routes: Routes = [
     path: 'farmer',
     loadChildren: () => import('./features/farmer/farmer.routes').then(m => m.farmerRoutes),
     canActivate: [AuthGuard, FarmerGuard]
+  },
+  {
+    path: 'order-success',
+    loadComponent: () => import('./features/order/order-success/order-success.component').then(m => m.OrderSuccessComponent),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'checkout',
+    loadComponent: () => import('./features/checkout/checkout.component').then(m => m.CheckoutComponent)
+  },
+  {
+    path: 'checkout/success',
+    loadComponent: () => import('./features/checkout/order-success/order-success.component').then(m => m.OrderSuccessComponent)
   },
   {
     path: '**',

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400">
+  <!-- Sky Background -->
+  <rect width="1200" height="400" fill="#E3F2FD"/>
+  
+  <!-- Sun -->
+  <circle cx="100" cy="80" r="60" fill="#FFD54F"/>
+  
+  <!-- Fields -->
+  <path d="M0 200 L1200 250 L1200 400 L0 400 Z" fill="#81C784"/>
+  <path d="M0 250 L1200 300 L1200 400 L0 400 Z" fill="#66BB6A"/>
+  
+  <!-- Trees -->
+  <g transform="translate(900,150)">
+    <path d="M-20 80 L20 80 L0 0 Z" fill="#2E7D32"/>
+    <rect x="-5" y="80" width="10" height="20" fill="#795548"/>
+  </g>
+  <g transform="translate(1000,180)">
+    <path d="M-15 60 L15 60 L0 0 Z" fill="#2E7D32"/>
+    <rect x="-4" y="60" width="8" height="15" fill="#795548"/>
+  </g>
+  
+  <!-- Produce Items -->
+  <g transform="translate(200,300)">
+    <!-- Various Vegetables and Fruits -->
+    <circle cx="0" cy="0" r="20" fill="#F44336"/> <!-- Tomato -->
+    <circle cx="50" cy="10" r="15" fill="#FFA726"/> <!-- Orange -->
+    <ellipse cx="100" cy="0" rx="25" ry="15" fill="#7CB342"/> <!-- Lettuce -->
+    <circle cx="150" cy="5" r="18" fill="#FFB300"/> <!-- Apple -->
+  </g>
+  
+  <!-- Text -->
+  <text x="600" y="150" font-family="Arial" font-size="48" text-anchor="middle" fill="#1B5E20" font-weight="bold">Fresh From Our Fields</text>
+  <text x="600" y="200" font-family="Arial" font-size="32" text-anchor="middle" fill="#33691E">Direct to Your Table</text>
+</svg>

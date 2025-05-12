@@ -1,13 +1,14 @@
 import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   templateUrl: './register.component.html',
   styles: [`
     .auth-container {
@@ -85,6 +86,75 @@ import { AuthService } from '../../../core/services/auth.service';
       cursor: not-allowed;
     }
 
+    .role-selection {
+      margin-bottom: 2rem;
+    }
+
+    .role-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .role-option {
+      position: relative;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .role-option:hover {
+      border-color: #2ecc71;
+      transform: translateY(-2px);
+    }
+
+    .role-option.selected {
+      border-color: #2ecc71;
+      background-color: #f0fff4;
+    }
+
+    .role-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .role-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .role-option .icon {
+      width: 2rem;
+      height: 2rem;
+      fill: #2ecc71;
+      margin-bottom: 0.5rem;
+      transition: transform 0.2s ease;
+    }
+
+    .role-option:hover .icon {
+      transform: scale(1.1);
+    }
+
+    .role-option h3 {
+      margin: 0;
+      color: #2c3e50;
+      font-size: 1.1rem;
+    }
+
+    .role-option p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: #64748b;
+      text-align: center;
+    }
+
     .auth-footer {
       text-align: center;
       margin-top: 1.5rem;
@@ -118,34 +188,44 @@ import { AuthService } from '../../../core/services/auth.service';
   `]
 })
 export class RegisterComponent {
-  firstName: string = '';
-  lastName: string = '';
-  email: string = '';
-  password: string = '';
-  confirmPassword: string = '';
-  role: string = 'customer';
-  acceptTerms: boolean = false;
-  error: string = '';
+  registerForm: FormGroup;
   isLoading: boolean = false;
+  error: string = '';
 
   constructor(
+    private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) {
+    this.registerForm = this.fb.group({
+      firstName: ['', [Validators.required, Validators.minLength(2)]],
+      lastName: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/)]],
+      confirmPassword: ['', Validators.required],
+      role: ['customer', Validators.required]
+    }, { validator: this.passwordMatchValidator });
+  }
+
+  private passwordMatchValidator(group: FormGroup): { [key: string]: boolean } | null {
+    const password = group.get('password');
+    const confirmPassword = group.get('confirmPassword');
+    
+    if (!password || !confirmPassword) return null;
+    
+    return password.value === confirmPassword.value ? null : { passwordMismatch: true };
+  }
+
+  ngOnInit(): void {}
 
   onSubmit(): void {
-    if (!this.firstName || !this.lastName || !this.email || !this.password || !this.confirmPassword) {
-      this.error = 'Please fill in all fields';
-      return;
-    }
-
-    if (this.password !== this.confirmPassword) {
-      this.error = 'Passwords do not match';
-      return;
-    }
-
-    if (!this.acceptTerms) {
-      this.error = 'Please accept the terms and conditions';
+    if (this.registerForm.invalid) {
+      Object.keys(this.registerForm.controls).forEach(key => {
+        const control = this.registerForm.get(key);
+        if (control?.invalid) {
+          control.markAsTouched();
+        }
+      });
       return;
     }
 
@@ -153,21 +233,34 @@ export class RegisterComponent {
     this.error = '';
 
     const userData = {
-      firstName: this.firstName,
-      lastName: this.lastName,
-      email: this.email,
-      password: this.password,
-      role: this.role as 'farmer' | 'customer'
+      firstName: this.registerForm.get('firstName')?.value.trim(),
+      lastName: this.registerForm.get('lastName')?.value.trim(),
+      email: this.registerForm.get('email')?.value.trim().toLowerCase(),
+      password: this.registerForm.get('password')?.value,
+      role: this.registerForm.get('role')?.value
     };
 
     this.authService.register(userData).subscribe({
-      next: () => {
+      next: (response) => {
+        this.isLoading = false;
+        this.error = '';
+        alert('Registration successful! Please login with your credentials.');
         this.router.navigate(['/auth/login']);
       },
       error: (error) => {
-        this.error = error.message;
         this.isLoading = false;
+        console.error('Registration error:', error);
+        
+        if (error.status === 0) {
+          this.error = 'Unable to connect to the server. Please make sure the backend server is running on port 5001.';
+        } else if (error.status === 409) {
+          this.error = 'This email is already registered';
+        } else if (error.error && error.error.message) {
+          this.error = error.error.message;
+        } else {
+          this.error = 'Registration failed. Please check your network connection and try again.';
+        }
       }
     });
   }
-} 
+}

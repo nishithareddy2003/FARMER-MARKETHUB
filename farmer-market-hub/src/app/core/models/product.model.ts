@@ -12,6 +12,9 @@ export interface Product {
   farmerId: string;
   farmer?: User;
   status: 'ACTIVE' | 'INACTIVE';
+  rating?: number;
+  ratingCount?: number;
+  ratingDistribution?: number[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,4 +29,4 @@ export interface Category {
   name: string;
   description: string;
   imageUrl: string;
-} 
+}

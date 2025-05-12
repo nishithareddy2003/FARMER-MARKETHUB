@@ -1,0 +1,120 @@
+<div class="checkout-container">
+  <h1>Checkout</h1>
+
+  <div class="checkout-grid">
+    <!-- Left Column: Shipping & Payment -->
+    <div class="checkout-details">
+      <section class="shipping-address">
+        <h2>Shipping Address</h2>
+        <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" formControlName="fullName" required>
+            <!-- Add validation messages -->
+          </div>
+          <div class="form-group">
+            <label for="addressLine1">Address Line 1</label>
+            <input type="text" id="addressLine1" formControlName="addressLine1" required>
+          </div>
+          <div class="form-group">
+            <label for="addressLine2">Address Line 2 (Optional)</label>
+            <input type="text" id="addressLine2" formControlName="addressLine2">
+          </div>
+          <div class="form-row">
+            <div class="form-group city">
+              <label for="city">City</label>
+              <input type="text" id="city" formControlName="city" required>
+            </div>
+            <div class="form-group state">
+              <label for="state">State</label>
+              <input type="text" id="state" formControlName="state" required>
+            </div>
+            <div class="form-group zip">
+              <label for="zipCode">ZIP Code</label>
+              <input type="text" id="zipCode" formControlName="zipCode" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="phoneNumber">Phone Number</label>
+            <input type="tel" id="phoneNumber" formControlName="phoneNumber" required>
+          </div>
+        </form>
+      </section>
+
+      <section class="payment-method">
+        <h2>Payment Method</h2>
+        <form [formGroup]="paymentForm">
+          <div class="payment-options">
+            <div class="form-group payment-option">
+              <input type="radio" id="paymentCard" value="card" formControlName="paymentMethod">
+              <label for="paymentCard">Credit/Debit Card</label>
+            </div>
+            <div class="form-group payment-option">
+              <input type="radio" id="paymentUpi" value="upi" formControlName="paymentMethod">
+              <label for="paymentUpi">UPI</label>
+            </div>
+          </div>
+
+          <!-- Card Details -->
+          <div *ngIf="paymentForm.get('paymentMethod')?.value === 'card'" class="card-details">
+            <div class="form-group">
+              <label for="cardNumber">Card Number</label>
+              <input type="text" id="cardNumber" formControlName="cardNumber" placeholder="XXXX XXXX XXXX XXXX" required>
+              <!-- Add validation messages -->
+            </div>
+            <div class="form-row">
+              <div class="form-group expiry">
+                <label for="expiryDate">Expiry Date</label>
+                <input type="text" id="expiryDate" formControlName="expiryDate" placeholder="MM/YY" required>
+                <!-- Add validation messages -->
+              </div>
+              <div class="form-group cvv">
+                <label for="cvv">CVV</label>
+                <input type="text" id="cvv" formControlName="cvv" placeholder="XXX" required>
+                <!-- Add validation messages -->
+              </div>
+            </div>
+          </div>
+
+          <!-- UPI Details -->
+          <div *ngIf="paymentForm.get('paymentMethod')?.value === 'upi'" class="upi-details">
+            <div class="form-group">
+              <label for="upiId">UPI ID</label>
+              <input type="text" id="upiId" formControlName="upiId" placeholder="yourname@bank" required>
+              <!-- Add validation messages -->
+            </div>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <!-- Right Column: Order Summary -->
+    <div class="order-summary">
+      <h2>Order Summary</h2>
+      <div *ngIf="cartItems.length > 0; else emptyCart">
+        <div *ngFor="let item of cartItems" class="summary-item">
+          <img [src]="item.product.imageUrl" [alt]="item.product.name" class="summary-item-image">
+          <div class="summary-item-details">
+            <span>{{ item.product.name }} (x{{ item.quantity }})</span>
+            <span>{{ (item.product.price * item.quantity) | currency }}</span>
+          </div>
+        </div>
+        <hr>
+        <div class="summary-totals">
+          <p>Subtotal: <span>{{ cartSubtotal | currency }}</span></p>
+          <p>Shipping: <span>{{ shippingCost | currency }}</span></p>
+          <p>Tax: <span>{{ taxAmount | currency }}</span></p>
+          <hr>
+          <p class="total">Total: <span>{{ cartTotal | currency }}</span></p>
+        </div>
+        <button type="button" class="place-order-button" [disabled]="!checkoutForm.valid || !paymentForm.valid || cartItems.length === 0" (click)="placeOrder()">
+          Place Order
+        </button>
+      </div>
+      <ng-template #emptyCart>
+        <p>Your cart is empty.</p>
+        <a routerLink="/products">Continue Shopping</a>
+      </ng-template>
+    </div>
+  </div>
+</div>

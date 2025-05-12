@@ -1,4 +1,9 @@
 <div class="cart-container">
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+    <button class="retry-btn" (click)="loadCart()">Retry</button>
+  </div>
+
   <div class="cart-header">
     <h1>Shopping Cart</h1>
     <div class="cart-summary">
@@ -7,34 +12,42 @@
     </div>
   </div>
 
-  <div class="cart-content">
-    <div *ngIf="cartItems.length === 0" class="empty-cart">
-      <p>Your cart is empty</p>
-      <a routerLink="/products" class="continue-shopping">Continue Shopping</a>
-    </div>
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Loading your cart...</p>
+  </div>
 
-    <div *ngIf="cartItems.length > 0" class="cart-items">
-      <div *ngFor="let item of cartItems" class="cart-item">
-        <div class="item-image">
-          <img [src]="item.product.imageUrl" [alt]="item.product.name">
+  <div *ngIf="!loading && cartItems.length === 0" class="empty-cart">
+    <p>Your cart is empty</p>
+    <a routerLink="/products" class="continue-shopping">Continue Shopping</a>
+  </div>
+
+  <div *ngIf="!loading && cartItems.length > 0" class="cart-items">
+    <div *ngFor="let item of cartItems" class="cart-item">
+      <div class="item-image">
+        <img [src]="item.product.imageUrl" [alt]="item.product.name">
+      </div>
+      <div class="item-details">
+        <h3>{{item.product.name}}</h3>
+        <p>{{item.product.description}}</p>
+        <div class="item-price">
+          <span>{{item.product.price | currency}} x {{item.quantity}}</span>
+          <span>Total: {{item.subtotal | currency}}</span>
         </div>
-        <div class="item-details">
-          <h3>{{item.product.name}}</h3>
-          <div class="item-price">{{item.product.price | currency}}</div>
-          <div class="quantity-controls">
-            <button (click)="updateQuantity(item, -1)" [disabled]="item.quantity <= 1">-</button>
-            <span>{{item.quantity}}</span>
-            <button (click)="updateQuantity(item, 1)" [disabled]="item.quantity >= item.product.stock">+</button>
-          </div>
-          <p class="subtotal">Subtotal: {{item.product.price * item.quantity | currency}}</p>
+        <div class="quantity-controls">
+          <button class="quantity-btn" (click)="updateQuantity(item, item.quantity - 1)" [disabled]="item.quantity <= 1">-</button>
+          <input type="number" class="quantity-input" [(ngModel)]="item.quantity" (ngModelChange)="updateQuantity(item, $event)" min="1" max="99">
+          <button class="quantity-btn" (click)="updateQuantity(item, item.quantity + 1)" [disabled]="item.quantity >= 99">+</button>
+          <button class="remove-btn" (click)="removeFromCart(item.product.id)">Remove</button>
         </div>
-        <button class="remove-item" (click)="removeFromCart(item)">Remove</button>
       </div>
     </div>
-
-    <div *ngIf="cartItems.length > 0" class="cart-actions">
-      <a routerLink="/products" class="continue-shopping">Continue Shopping</a>
-      <button class="checkout-button" routerLink="checkout">Proceed to Checkout</button>
+    <div class="cart-actions">
+      <button 
+        (click)="router.navigate(['/checkout'])"
+        class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+        Proceed to Checkout
+      </button>
     </div>
   </div>
-</div> 
+</div>

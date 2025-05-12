@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model address {
+  id        String   @id
+  profileId String
+  street    String
+  city      String
+  state     String
+  zipCode   String
+  country   String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  profile   profile  @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Address_profileId_fkey")
+
+  @@index([profileId], map: "Address_profileId_fkey")
+}
+
+model cart {
+  id        String     @id
+  userId    String     @unique(map: "Cart_userId_key")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime
+  user      user       @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Cart_userId_fkey")
+  cartitem  cartitem[]
+}
+
+model cartitem {
+  id        String   @id
+  cartId    String
+  productId String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  cart      cart     @relation(fields: [cartId], references: [id], onDelete: Cascade, map: "CartItem_cartId_fkey")
+  product   product  @relation(fields: [productId], references: [id], onDelete: Cascade, map: "CartItem_productId_fkey")
+
+  @@unique([cartId, productId], map: "CartItem_cartId_productId_key")
+  @@index([productId], map: "CartItem_productId_fkey")
+}
+
+model category {
+  id          String    @id
+  name        String    @unique(map: "Category_name_key")
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  product     product[]
+}
+
+model order {
+  id          String       @id
+  customerId  String
+  status      order_status @default(PENDING)
+  totalAmount Decimal
+  addressId   String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime
+  user        user         @relation(fields: [customerId], references: [id], map: "Order_customerId_fkey")
+  orderitem   orderitem[]
+
+  @@index([customerId], map: "Order_customerId_fkey")
+}
+
+model orderitem {
+  id        String   @id
+  orderId   String
+  productId String
+  quantity  Int
+  price     Decimal
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  order     order    @relation(fields: [orderId], references: [id], onDelete: Cascade, map: "OrderItem_orderId_fkey")
+  product   product  @relation(fields: [productId], references: [id], map: "OrderItem_productId_fkey")
+
+  @@index([orderId], map: "OrderItem_orderId_fkey")
+  @@index([productId], map: "OrderItem_productId_fkey")
+}
+
+model product {
+  id          String      @id
+  name        String
+  description String
+  price       Decimal
+  stock       Int
+  unit        String      @default("kg")
+  imageUrl    String?
+  sellerId    String
+  categoryId  String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime
+  cartitem    cartitem[]
+  orderitem   orderitem[]
+  category    category    @relation(fields: [categoryId], references: [id], map: "Product_categoryId_fkey")
+  user        user        @relation(fields: [sellerId], references: [id], map: "Product_sellerId_fkey")
+
+  @@index([categoryId], map: "Product_categoryId_fkey")
+  @@index([sellerId], map: "Product_sellerId_fkey")
+}
+
+model profile {
+  id          String    @id
+  userId      String    @unique(map: "Profile_userId_key")
+  phoneNumber String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  address     address[]
+  user        user      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Profile_userId_fkey")
+}
+
+model user {
+  id        String    @id
+  email     String    @unique(map: "User_email_key")
+  firstName String
+  lastName  String
+  password  String
+  role      user_role @default(CUSTOMER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  cart      cart?
+  order     order[]
+  product   product[]
+  profile   profile?
+}
+
+enum order_status {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum user_role {
+  FARMER
+  CUSTOMER
+}

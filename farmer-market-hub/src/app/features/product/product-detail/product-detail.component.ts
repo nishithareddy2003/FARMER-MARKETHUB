@@ -25,6 +25,9 @@ export class ProductDetailComponent implements OnInit {
     stock: 0,
     farmerId: '',
     status: 'ACTIVE',
+    rating: 0,
+    ratingCount: 0,
+    ratingDistribution: [0, 0, 0, 0, 0],
     createdAt: new Date(),
     updatedAt: new Date()
   };
@@ -67,4 +70,4 @@ export class ProductDetailComponent implements OnInit {
       this.cartService.addToCart(this.product, this.quantity);
     }
   }
-} 
+}

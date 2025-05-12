@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './core/services/auth.service';
 import { CartService } from './core/services/cart.service';
 import { User } from './core/models/user.model';
@@ -9,14 +10,14 @@ import { LoadingComponent } from './shared/components/loading/loading.component'
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, LoadingComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, LoadingComponent, HttpClientModule],
   template: `
     <app-loading></app-loading>
     <div class="app-container">
       <header>
         <div class="logo">
           <a routerLink="/">
-            <img src="assets/images/logo.png" alt="Farmer Market Hub">
+            <img src="assets/logo.svg" alt="Farmer Market Hub">
             <span>Farmer Market Hub</span>
           </a>
         </div>
@@ -269,9 +270,10 @@ import { LoadingComponent } from './shared/components/loading/loading.component'
   `]
 })
 export class AppComponent implements OnInit {
+  title = 'farmer-market-hub';
   currentUser: User | null = null;
   cartItemCount$ = this.cartService.cartItemCount$;
-  isAdmin: boolean = false;
+  isAdmin = false;
 
   constructor(
     private authService: AuthService,

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Order } from '../models/order.model';
+import { Order, OrderItem } from '../models/order.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -19,7 +19,59 @@ export class OrderService {
       quantity: number;
     }>;
   }): Observable<Order> {
-    return this.http.post<Order>(this.apiUrl, orderData);
+    // Temporary mock implementation until backend is ready
+    return new Observable<Order>(subscriber => {
+      const mockItems: OrderItem[] = orderData.items.map(item => ({
+        id: Math.random().toString(36).substr(2, 9),
+        product: {
+          id: item.productId,
+          name: 'Mock Product',
+          description: 'Mock Description',
+          price: 10.00,
+          category: 'Mock Category',
+          imageUrl: 'mock-image.jpg',
+          images: [],
+          stock: 100,
+          farmerId: 'mock-farmer-id',
+          status: 'ACTIVE',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        quantity: item.quantity,
+        price: 10.00,
+        subtotal: 10.00 * item.quantity
+      }));
+
+      const mockOrder: Order = {
+        id: Math.random().toString(36).substr(2, 9),
+        userId: 'mock-user-id',
+        customer: {
+          id: 'mock-user-id',
+          firstName: 'Mock',
+          lastName: 'User',
+          email: 'mock@example.com',
+          role: 'customer',
+          phone: '+1234567890',
+          address: '123 Mock Street',
+          avatarUrl: '/assets/default-avatar.png',
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        items: mockItems,
+        totalAmount: mockItems.reduce((sum, item) => sum + item.subtotal, 0),
+        status: 'pending',
+        paymentStatus: 'pending',
+        deliveryAddress: orderData.deliveryAddress,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      setTimeout(() => {
+        subscriber.next(mockOrder);
+        subscriber.complete();
+      }, 1000); // Simulate network delay
+    });
   }
 
   getOrders(): Observable<Order[]> {
@@ -57,4 +109,4 @@ export class OrderService {
   getOrdersByStatus(status: string): Observable<Order[]> {
     return this.http.get<Order[]>(`/api/orders/status/${status}`);
   }
-} 
+}

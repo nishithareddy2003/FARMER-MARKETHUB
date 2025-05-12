@@ -153,43 +153,60 @@ export class ProductListComponent implements OnInit {
   }
 
   private loadProducts(): void {
-    this.productService.getProducts().subscribe(products => {
-      this.products = products;
-      this.categories = [...new Set(products.map(p => p.category))];
-      this.filterProducts();
-    });
-  }
-
-  filterProducts(): void {
-    this.filteredProducts = this.products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                           product.description.toLowerCase().includes(this.searchQuery.toLowerCase());
-      const matchesCategory = !this.selectedCategory || product.category === this.selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-    this.sortProducts();
-  }
-
-  sortProducts(): void {
-    this.filteredProducts.sort((a, b) => {
-      switch (this.sortBy) {
-        case 'price-asc':
-          return a.price - b.price;
-        case 'price-desc':
-          return b.price - a.price;
-        case 'name-asc':
-          return a.name.localeCompare(b.name);
-        case 'name-desc':
-          return b.name.localeCompare(a.name);
-        default:
-          return 0;
+    this.productService.getProducts().subscribe({
+      next: (products) => {
+        this.products = products;
+        this.categories = [...new Set(products.map(p => p.category))];
+        this.filterProducts();
+      },
+      error: (error) => {
+        console.error('Error loading products:', error);
+        // Handle error appropriately
       }
     });
   }
 
-  addToCart(product: Product): void {
-    if (product.stock > 0) {
-      this.cartService.addToCart(product, 1);
+  filterProducts(): void {
+    let filtered = this.products;
+    
+    if (this.searchQuery.trim()) {
+      const searchLower = this.searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(searchLower) ||
+        product.description.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    if (this.selectedCategory) {
+      filtered = filtered.filter(product => product.category === this.selectedCategory);
+    }
+    
+    this.filteredProducts = filtered;
+    this.sortProducts();
+  }
+
+  sortProducts(): void {
+    const sortFunctions = {
+      'price-asc': (a: Product, b: Product) => a.price - b.price,
+      'price-desc': (a: Product, b: Product) => b.price - a.price,
+      'name-asc': (a: Product, b: Product) => a.name.localeCompare(b.name),
+      'name-desc': (a: Product, b: Product) => b.name.localeCompare(a.name)
+    };
+
+    const sortFn = sortFunctions[this.sortBy as keyof typeof sortFunctions];
+    if (sortFn) {
+      this.filteredProducts.sort(sortFn);
     }
   }
-} 
+
+  addToCart(product: Product): void {
+    if (product.stock > 0) {
+      try {
+        this.cartService.addToCart(product, 1);
+      } catch (error) {
+        console.error('Error adding product to cart:', error);
+        // Handle error appropriately
+      }
+    }
+  }
+}

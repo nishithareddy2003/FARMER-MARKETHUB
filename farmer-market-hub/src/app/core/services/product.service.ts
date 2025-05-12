@@ -20,10 +20,11 @@ export class ProductService {
         description: 'Locally grown, pesticide-free organic tomatoes. Perfect for salads and cooking.',
         price: 4.99,
         category: 'Vegetables',
-        imageUrl: 'https://images.unsplash.com/photo-1546470427-f5d8c4edf3e1?w=500&h=500&fit=crop',
+        imageUrl: 'https://images.unsplash.com/photo-1518977822534-7049a61ee0c2?w=500&h=500&fit=crop',
         images: [
-          'https://images.unsplash.com/photo-1546470427-f5d8c4edf3e1?w=500&h=500&fit=crop',
-          'https://images.unsplash.com/photo-1546470427-f5d8c4edf3e1?w=500&h=500&fit=crop'
+          'https://images.unsplash.com/photo-1518977822534-7049a61ee0c2?w=500&h=500&fit=crop',
+          'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500&h=500&fit=crop',
+          'https://images.unsplash.com/photo-1524593166156-312f362cada0?w=500&h=500&fit=crop'
         ],
         stock: 50,
         farmerId: 'farmer1',
@@ -378,4 +379,24 @@ export class ProductService {
   deleteCategory(id: string): Observable<void> {
     return this.http.delete<void>(`/api/categories/${id}`);
   }
-} 
+
+  rateProduct(productId: string, rating: number): Observable<Product> {
+    return new Observable(subscriber => {
+      this.getProduct(productId).subscribe(product => {
+        const updatedProduct = { ...product };
+        if (!updatedProduct.ratingCount) updatedProduct.ratingCount = 0;
+        if (!updatedProduct.rating) updatedProduct.rating = 0;
+        if (!updatedProduct.ratingDistribution) updatedProduct.ratingDistribution = [0, 0, 0, 0, 0];
+
+        // Update rating metrics
+        const oldTotal = updatedProduct.rating * updatedProduct.ratingCount;
+        updatedProduct.ratingCount++;
+        updatedProduct.rating = (oldTotal + rating) / updatedProduct.ratingCount;
+        updatedProduct.ratingDistribution[rating - 1]++;
+
+        subscriber.next(updatedProduct);
+        subscriber.complete();
+      });
+    });
+  }
+}

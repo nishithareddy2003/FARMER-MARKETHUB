@@ -126,9 +126,13 @@ export class LoginComponent {
         this.router.navigate(['/']);
       },
       error: (error) => {
-        this.error = error.message;
+        if (error.status === 0) {
+          this.error = 'Unable to connect to the server. Please check your internet connection or try again later.';
+        } else {
+          this.error = error.error?.message || error.message || 'An unexpected error occurred';
+        }
         this.isLoading = false;
       }
     });
   }
-} 
+}

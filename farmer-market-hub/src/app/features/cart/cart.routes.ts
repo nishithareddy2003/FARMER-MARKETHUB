@@ -8,7 +8,7 @@ export const CART_ROUTES: Routes = [
   },
   {
     path: 'checkout',
-    loadComponent: () => import('./checkout/checkout.component')
+    loadComponent: () => import('../checkout/checkout.component')
       .then(m => m.CheckoutComponent)
   }
-]; 
+];

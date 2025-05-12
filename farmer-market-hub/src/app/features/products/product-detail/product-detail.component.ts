@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { Product } from '../../../core/models/product.model';
 import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
-import { Product } from '../../../core/models/product.model';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -25,6 +26,9 @@ export class ProductDetailComponent implements OnInit {
     stock: 0,
     farmerId: '',
     status: 'ACTIVE',
+    rating: 0,
+    ratingCount: 0,
+    ratingDistribution: [0, 0, 0, 0, 0],
     createdAt: new Date(),
     updatedAt: new Date()
   };
@@ -35,7 +39,8 @@ export class ProductDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private productService: ProductService,
-    private cartService: CartService
+    private cartService: CartService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -49,7 +54,6 @@ export class ProductDetailComponent implements OnInit {
     this.productService.getProduct(id).subscribe(product => {
       this.product = product;
       this.selectedImage = product.imageUrl;
-      // Initialize images array with the main image if empty
       if (!this.product.images || this.product.images.length === 0) {
         this.product.images = [product.imageUrl];
       }
@@ -69,6 +73,18 @@ export class ProductDetailComponent implements OnInit {
   addToCart(): void {
     if (this.product.stock > 0) {
       this.cartService.addToCart(this.product, this.quantity);
+    }
+  }
+
+  rateProduct(rating: number): void {
+    if (rating >= 1 && rating <= 5) {
+      if (this.authService.isAuthenticated()) {
+        this.productService.rateProduct(this.product.id, rating).subscribe(updatedProduct => {
+          this.product = updatedProduct;
+        });
+      } else {
+        console.log('Please login to rate products');
+      }
     }
   }
 }

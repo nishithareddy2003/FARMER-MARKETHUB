@@ -3,15 +3,17 @@
     <h1>Create Account</h1>
     <p class="subtitle">Join our community of farmers and customers</p>
 
-    <form (ngSubmit)="onSubmit()">
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label for="firstName">First Name</label>
         <input 
           type="text" 
           id="firstName" 
-          [(ngModel)]="firstName" 
-          name="firstName" 
-          required>
+          formControlName="firstName">
+        <div *ngIf="registerForm.get('firstName')?.touched && registerForm.get('firstName')?.invalid" class="error-message">
+          <span *ngIf="registerForm.get('firstName')?.errors?.['required']">First name is required</span>
+          <span *ngIf="registerForm.get('firstName')?.errors?.['minlength']">First name must be at least 2 characters</span>
+        </div>
       </div>
 
       <div class="form-group">
@@ -19,9 +21,11 @@
         <input 
           type="text" 
           id="lastName" 
-          [(ngModel)]="lastName" 
-          name="lastName" 
-          required>
+          formControlName="lastName">
+        <div *ngIf="registerForm.get('lastName')?.touched && registerForm.get('lastName')?.invalid" class="error-message">
+          <span *ngIf="registerForm.get('lastName')?.errors?.['required']">Last name is required</span>
+          <span *ngIf="registerForm.get('lastName')?.errors?.['minlength']">Last name must be at least 2 characters</span>
+        </div>
       </div>
 
       <div class="form-group">
@@ -29,9 +33,11 @@
         <input 
           type="email" 
           id="email" 
-          [(ngModel)]="email" 
-          name="email" 
-          required>
+          formControlName="email">
+        <div *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid" class="error-message">
+          <span *ngIf="registerForm.get('email')?.errors?.['required']">Email is required</span>
+          <span *ngIf="registerForm.get('email')?.errors?.['email']">Please enter a valid email address</span>
+        </div>
       </div>
 
       <div class="form-group">
@@ -39,9 +45,12 @@
         <input 
           type="password" 
           id="password" 
-          [(ngModel)]="password" 
-          name="password" 
-          required>
+          formControlName="password">
+        <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid" class="error-message">
+          <span *ngIf="registerForm.get('password')?.errors?.['required']">Password is required</span>
+          <span *ngIf="registerForm.get('password')?.errors?.['minlength']">Password must be at least 8 characters</span>
+          <span *ngIf="registerForm.get('password')?.errors?.['pattern']">Password must contain at least one uppercase letter, one lowercase letter, and one number</span>
+        </div>
       </div>
 
       <div class="form-group">
@@ -49,22 +58,50 @@
         <input 
           type="password" 
           id="confirmPassword" 
-          [(ngModel)]="confirmPassword" 
-          name="confirmPassword" 
-          required>
+          formControlName="confirmPassword">
+        <div *ngIf="registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.invalid" class="error-message">
+          <span *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">Please confirm your password</span>
+          <span *ngIf="registerForm.get('confirmPassword')?.errors?.['passwordMismatch']">Passwords do not match</span>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="role">Account Type</label>
-        <select 
-          id="role" 
-          [(ngModel)]="role" 
-          name="role" 
-          required>
-          <option value="customer">Customer</option>
-          <option value="farmer">Farmer</option>
-        </select>
+      <div class="form-group role-selection">
+        <label for="role">Choose Account Type</label>
+        <div class="role-options">
+          <div class="role-option" [class.selected]="registerForm.get('role')?.value === 'customer'" role="radio" [attr.aria-checked]="registerForm.get('role')?.value === 'customer'">
+            <input type="radio" id="customer" formControlName="role" value="customer">
+            <label for="customer">
+              <svg class="icon" aria-hidden="true">
+                <use href="/assets/fontawesome.svg#shopping-cart"></use>
+              </svg>
+              <h3>Customer</h3>
+              <p>Browse and purchase fresh produce directly from farmers</p>
+            </label>
+          </div>
+          <div class="role-option" [class.selected]="registerForm.get('role')?.value === 'farmer'" role="radio" [attr.aria-checked]="registerForm.get('role')?.value === 'farmer'">
+            <input type="radio" id="farmer" formControlName="role" value="farmer">
+            <label for="farmer">
+              <svg class="icon" aria-hidden="true">
+                <use href="/assets/fontawesome.svg#tractor"></use>
+              </svg>
+              <h3>Farmer</h3>
+              <p>Sell your produce and manage your farm products</p>
+            </label>
+          </div>
+        </div>
       </div>
+
+      <!-- <div class="form-group checkbox-group">
+        <label>
+          <input 
+            type="checkbox" 
+            formControlName="acceptTerms">
+          I accept the terms and conditions
+        </label>
+        <div *ngIf="registerForm.get('acceptTerms')?.touched && registerForm.get('acceptTerms')?.invalid" class="error-message">
+          <span *ngIf="registerForm.get('acceptTerms')?.errors?.['required']">You must accept the terms and conditions</span>
+        </div>
+      </div> -->
 
       <div *ngIf="error" class="error">{{ error }}</div>
 
@@ -77,4 +114,4 @@
       Already have an account? <a routerLink="/auth/login">Sign In</a>
     </div>
   </div>
-</div> 
+</div>

@@ -51,7 +51,8 @@ export class AuthService {
   }
 
   register(userData: Partial<User>): Observable<User> {
-    return this.http.post<{ user: User; token: string }>(`${environment.apiUrl}/auth/register`, userData)
+    // Corrected path to include /api segment
+    return this.http.post<{ user: User; token: string }>(`${environment.apiUrl}/api/Auth/register`, userData)
       .pipe(
         tap(response => {
           if (isPlatformBrowser(this.platformId)) {
@@ -126,4 +127,4 @@ export class AuthService {
   deleteUser(id: string): Observable<void> {
     return this.http.delete<void>(`${environment.apiUrl}/users/${id}`);
   }
-} 
+}

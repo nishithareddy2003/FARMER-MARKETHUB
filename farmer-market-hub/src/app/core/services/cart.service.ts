@@ -1,45 +1,84 @@
 import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { Product } from '../models/product.model';
 import { CartItem, Cart } from '../models/cart.model';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  private apiUrl = `${environment.apiUrl}/cart`;
   private cartSubject = new BehaviorSubject<Cart | null>(null);
+  private loadingSubject = new BehaviorSubject<boolean>(false);
+  private errorSubject = new BehaviorSubject<string | null>(null);
+  
   cartItems$ = this.cartSubject.asObservable();
   cartItemCount$ = new BehaviorSubject<number>(0);
+  loading$ = this.loadingSubject.asObservable();
+  error$ = this.errorSubject.asObservable();
   private isBrowser: boolean;
 
-  constructor(@Inject(PLATFORM_ID) platformId: Object, private http: HttpClient) {
+  constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
-    this.loadCart();
+    if (this.isBrowser) {
+      const savedCart = localStorage.getItem('cart');
+      if (savedCart) {
+        try {
+          const cart = JSON.parse(savedCart);
+          this.cartSubject.next(cart);
+          this.updateCartItemCount();
+        } catch (error) {
+          console.error('Error parsing saved cart:', error);
+          localStorage.removeItem('cart');
+          this.initializeEmptyCart();
+        }
+      } else {
+        this.initializeEmptyCart();
+      }
+    }
   }
 
-  private loadCart(): void {
-    this.getCart().subscribe(cart => {
-      this.cartSubject.next(cart);
-      this.updateCartItemCount();
-    });
+  private initializeEmptyCart(): Cart {
+    const emptyCart: Cart = {
+      id: 'temp-' + Date.now(),
+      userId: 'anonymous',
+      items: [],
+      totalAmount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.cartSubject.next(emptyCart);
+    this.updateCartItemCount();
+    return emptyCart;
   }
 
   getCart(): Observable<Cart> {
-    return this.http.get<Cart>(this.apiUrl);
+    return new Observable<Cart>(observer => {
+      this.cartItems$.subscribe(cart => {
+        if (cart) {
+          observer.next(cart);
+        } else {
+          const emptyCart = this.initializeEmptyCart();
+          observer.next(emptyCart);
+        }
+      });
+    });
   }
 
-  addToCart(product: Product, quantity: number): void {
-    const currentCart = this.cartSubject.value;
-    if (!currentCart) {
-      this.loadCart();
-      return;
-    }
+  addToCart(product: Product, quantity: number = 1): void {
+    this.loadingSubject.next(true);
+    this.errorSubject.next(null);
+    
+    const currentCart = this.cartSubject.value || {
+      id: 'temp-' + Date.now(),
+      userId: 'anonymous',
+      items: [],
+      totalAmount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
 
-    const currentItems = [...currentCart.items];
+    const currentItems = [...(currentCart.items || [])];
     const existingItem = currentItems.find(item => item.product.id === product.id);
 
     if (existingItem) {
@@ -47,7 +86,7 @@ export class CartService {
       existingItem.subtotal = existingItem.quantity * product.price;
     } else {
       const newItem: CartItem = {
-        id: '', // Will be set by the backend
+        id: 'temp-' + Date.now(),
         product,
         quantity,
         subtotal: quantity * product.price
@@ -58,12 +97,17 @@ export class CartService {
     const updatedCart: Cart = {
       ...currentCart,
       items: currentItems,
-      totalAmount: currentItems.reduce((total, item) => total + item.subtotal, 0)
+      totalAmount: currentItems.reduce((total, item) => total + item.subtotal, 0),
+      updatedAt: new Date()
     };
 
     this.cartSubject.next(updatedCart);
-    this.http.put<Cart>(this.apiUrl, updatedCart).subscribe();
     this.updateCartItemCount();
+    this.loadingSubject.next(false);
+    
+    if (this.isBrowser) {
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
+    }
   }
 
   removeFromCart(productId: string): void {
@@ -74,12 +118,16 @@ export class CartService {
     const updatedCart: Cart = {
       ...currentCart,
       items: updatedItems,
-      totalAmount: updatedItems.reduce((total, item) => total + item.subtotal, 0)
+      totalAmount: updatedItems.reduce((total, item) => total + item.subtotal, 0),
+      updatedAt: new Date()
     };
 
     this.cartSubject.next(updatedCart);
-    this.http.put<Cart>(this.apiUrl, updatedCart).subscribe();
     this.updateCartItemCount();
+    
+    if (this.isBrowser) {
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
+    }
   }
 
   updateQuantity(productId: string, quantity: number): void {
@@ -100,27 +148,36 @@ export class CartService {
     const updatedCart: Cart = {
       ...currentCart,
       items: updatedItems,
-      totalAmount: updatedItems.reduce((total, item) => total + item.subtotal, 0)
+      totalAmount: updatedItems.reduce((total, item) => total + item.subtotal, 0),
+      updatedAt: new Date()
     };
 
     this.cartSubject.next(updatedCart);
-    this.http.put<Cart>(this.apiUrl, updatedCart).subscribe();
     this.updateCartItemCount();
+    
+    if (this.isBrowser) {
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
+    }
   }
 
-  clearCart(): void {
-    const currentCart = this.cartSubject.value;
-    if (!currentCart) return;
-
-    const updatedCart: Cart = {
-      ...currentCart,
+  clearCart(): Observable<Cart> {
+    const emptyCart: Cart = {
+      id: 'temp-' + Date.now(),
+      userId: 'anonymous',
       items: [],
-      totalAmount: 0
+      totalAmount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
-    this.cartSubject.next(updatedCart);
-    this.http.put<Cart>(this.apiUrl, updatedCart).subscribe();
+    this.cartSubject.next(emptyCart);
     this.updateCartItemCount();
+    
+    if (this.isBrowser) {
+      localStorage.removeItem('cart');
+    }
+    
+    return of(emptyCart);
   }
 
   private updateCartItemCount(): void {
@@ -136,4 +193,4 @@ export class CartService {
   getCartTotal(): number {
     return this.cartSubject.value?.totalAmount || 0;
   }
-} 
+}

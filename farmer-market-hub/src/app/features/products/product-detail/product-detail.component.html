@@ -25,6 +25,26 @@
         Category: {{product.category}}
       </div>
 
+      <div class="product-rating">
+        <div class="rating-stars">
+          <span class="star" *ngFor="let star of [1,2,3,4,5]" 
+                (click)="rateProduct(star)"
+                [class.filled]="star <= (product.rating || 0)">
+            ★
+          </span>
+          <span class="rating-count">({{product.ratingCount || 0}} reviews)</span>
+        </div>
+        <div class="rating-distribution" *ngIf="product.ratingDistribution">
+          <div class="rating-bar" *ngFor="let count of product.ratingDistribution; let i = index">
+            <span class="stars">{{5 - i}} ★</span>
+            <div class="bar-container">
+              <div class="bar" [style.width.%]="product.ratingCount ? (count / product.ratingCount) * 100 : 0"></div>
+            </div>
+            <span class="count">{{count}}</span>
+          </div>
+        </div>
+      </div>
+
       <div class="quantity-selector">
         <label>Quantity:</label>
         <div class="quantity-controls">
@@ -57,4 +77,4 @@
       </ul>
     </div>
   </div>
-</div> 
+</div>

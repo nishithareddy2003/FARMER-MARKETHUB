@@ -2,6 +2,7 @@
   "name": "farmer-market-hub",
   "version": "0.0.0",
   "scripts": {
+    "prisma:seed": "ts-node prisma/seed.ts",
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
@@ -21,9 +22,20 @@
     "@angular/platform-server": "^17.3.0",
     "@angular/router": "^17.3.0",
     "@angular/ssr": "^17.3.0",
+    "@prisma/client": "^6.6.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/uuid": "^10.0.0",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.6.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
+    "uuid": "^11.1.0",
     "zone.js": "~0.14.3"
   },
   "devDependencies": {
